@@ -16,14 +16,24 @@ int motor_right[] = {7, 8};
 
 
 const int enablePin = 9;    // H-bridge enable pin for both motors
-const int echoPin = 5;
-const int trigPin = 4;
+const int echoPin = 5; //For infared sensor
+const int trigPin = 4; //For infared sensor
 const int ledPin =  13;    // LED connected to digital pin 13
-SharpIR sharp(0, 25, 93, model);
+
+
+/**********************************************************
+//Example: SharpIR sharp(ir, 25, 93, model);
+//ir: the pin where your sensor is attached.
+//25: the number of readings the library will make before calculating an average distance.
+//93: the difference between two consecutive measurements to be taken as valid (in %)
+//model: is an int that determines your sensor:  1080 for GP2Y0A21Y, 20150 for GP2Y0A02Y
+**********************************************************/
+SharpIR sharp(0, 25, 93, 1080); //To give values for the SHARPIR sensor for edge detection
 
 //prototype method for edgeSense()
 void edgeSense();
-void 
+//prototype method for objectSense()
+void objectSense();
 
 //Setup
 void setup() {
@@ -35,12 +45,10 @@ void setup() {
   pinMode(motor_left[1], OUTPUT);
   pinMode(motor_right[0], OUTPUT);
   pinMode(motor_right[1], OUTPUT);
-  pinMode(irSensorPin, INPUT);
-  pinMode(irLedPin, OUTPUT);
-  analogWrite(E1, 153); // Run in half speed
+  analogWrite(enablePin, 153); // Run in half speed
 }
 
-// ————————————————————————— Loop
+//Loop
 void loop() {
 
   // establish variables for duration of the ping, 
@@ -66,6 +74,7 @@ void loop() {
   inches = microsecondsToInches(duration);
   cm = microsecondsToCentimeters(duration);
 
+  //If the distance the infared sensor detects is less than 25 cm, we will make the robot turn right to avoid the obstacle
   if (cm < 25){
     Serial.println ("Close Obstacle detected!" );
     Serial.println ("Obstacle Details:");
@@ -79,6 +88,7 @@ void loop() {
     digitalWrite(motor_right[0], LOW);
     digitalWrite(motor_right[1], HIGH);
   }
+  //If the object is out of range of 25 cm, then the robot will continue to move at normal speeds
   else{
     //Set the motors on
     digitalWrite(motor_left[0], HIGH); 
@@ -87,15 +97,15 @@ void loop() {
     digitalWrite(motor_right[1], LOW);
   }
   
-  distance = edgeSense(); 
-  Serial.println(distance);            // prints the value of the sensor to the serial monitor         
-  delay(10); //wait for the string to be sent
+  edgeSense();   
+  
 }
 
 void edgeSense(){
-  SensorValue = analogRead(sensorpin);       // reads the value of the sharp sensor
-  delay(100);                    // wait for this much time before printing next value
-  distance = 4800/sharp.distance;
+//  SensorValue = analogRead(sensorpin);       // reads the value of the sharp sensor
+//  delay(100);                    // wait for this much time before printing next value
+  distance = 4800/sharp.distance();
+  delay(10); //wait for the string to be sent
   Serial.println(distance);            // prints the value of the sensor to the serial monitor
   if (distance > 2){
     digitalWrite(motor_left[0], LOW); 
@@ -109,6 +119,10 @@ void edgeSense(){
     digitalWrite(motor_right[1], LOW);
     delay(1000);
   }
+}
+
+void objectSense(){
+  
 }
 
 long microsecondsToInches(long microseconds)
