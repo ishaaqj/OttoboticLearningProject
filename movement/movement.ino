@@ -1,3 +1,7 @@
+#include <SharpIR.h>
+
+int distance = 0;
+
 // Motors for tires, Connected on the H-bridge
 
 // Left Motor
@@ -15,17 +19,25 @@ const int enablePin = 9;    // H-bridge enable pin for both motors
 const int echoPin = 5;
 const int trigPin = 4;
 const int ledPin =  13;    // LED connected to digital pin 13
+SharpIR sharp(0, 25, 93, model);
+
+//prototype method for edgeSense()
+void edgeSense();
+void 
 
 //Setup
 void setup() {
   Serial.begin(9600);
-  pinMode(motor_left, OUTPUT);
-  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
   pinMode(enablePin, OUTPUT);
   pinMode(motor_left[0], OUTPUT);
   pinMode(motor_left[1], OUTPUT);
   pinMode(motor_right[0], OUTPUT);
   pinMode(motor_right[1], OUTPUT);
+  pinMode(irSensorPin, INPUT);
+  pinMode(irLedPin, OUTPUT);
+  analogWrite(E1, 153); // Run in half speed
 }
 
 // ————————————————————————— Loop
@@ -34,11 +46,11 @@ void loop() {
   // establish variables for duration of the ping, 
   // and the distance result in inches and centimeters:
   long duration, inches, cm;
-  analogWrite(E1, 153); // Run in half speed
+  
 
   // The sensor is triggered by a HIGH pulse for 10 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  pinMode(trigPin, OUTPUT);
+  
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
@@ -48,7 +60,6 @@ void loop() {
   // Read the signal from the sensor: a HIGH pulse whose
   // duration is the time (in microseconds) from the sending
   // of the ping to the reception of its echo off of an object.
-  pinMode(echoPin, INPUT);
   duration = pulseIn(echoPin, HIGH);
 
   //convert the time into a distance
@@ -59,8 +70,8 @@ void loop() {
     Serial.println ("Close Obstacle detected!" );
     Serial.println ("Obstacle Details:");
     Serial.print ("Distance From Robot is " );
-    Serial.print ( distance);
-    Serial.print ( " CM!");// print out the distance in centimeters.
+    Serial.print (cm);
+    Serial.print ("CM!");// print out the distance in centimeters.
     Serial.println (" The obstacle is declared a threat due to close distance. ");
     Serial.println (" Turning !");
     digitalWrite(motor_left[0], HIGH); 
@@ -76,9 +87,31 @@ void loop() {
     digitalWrite(motor_right[1], LOW);
   }
   
+  distance = edgeSense(); 
+  Serial.println(distance);            // prints the value of the sensor to the serial monitor         
+  delay(10); //wait for the string to be sent
 }
 
-  long microsecondsToInches(long microseconds)
+void edgeSense(){
+  SensorValue = analogRead(sensorpin);       // reads the value of the sharp sensor
+  delay(100);                    // wait for this much time before printing next value
+  distance = 4800/sharp.distance;
+  Serial.println(distance);            // prints the value of the sensor to the serial monitor
+  if (distance > 2){
+    digitalWrite(motor_left[0], LOW); 
+    digitalWrite(motor_left[1], HIGH);
+    digitalWrite(motor_right[0], LOW);
+    digitalWrite(motor_right[1], HIGH);
+    delay (1000);
+    digitalWrite(motor_left[0], LOW); 
+    digitalWrite(motor_left[1], HIGH);
+    digitalWrite(motor_right[0], LOW);
+    digitalWrite(motor_right[1], LOW);
+    delay(1000);
+  }
+}
+
+long microsecondsToInches(long microseconds)
 {
   // According to Parallax's datasheet for the PING))), there are
   // 73.746 microseconds per inch (i.e. sound travels at 1130 feet per
