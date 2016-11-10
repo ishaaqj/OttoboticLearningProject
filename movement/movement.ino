@@ -1,39 +1,42 @@
-// —————————————————————————  Motors
-int motor_left[] = {2, 3};
+// Motors for tires, Connected on the H-bridge
+
+// Left Motor
+// 2 represents the positive side
+// 3 represents the negative side
+int motor_left[] = {2,3};
+
+//Right Motor
+// 7 represents the positive side
+// 8 represents the negative side
 int motor_right[] = {7, 8};
-const int enablePin = 9;    // H-bridge enable pin
+
+
+const int enablePin = 9;    // H-bridge enable pin for both motors
 const int echoPin = 5;
 const int trigPin = 4;
 const int ledPin =  13;    // LED connected to digital pin 13
 
-// ————————————————————————— Setup
+//Setup
 void setup() {
-Serial.begin(9600);
-
-// Setup motors
-
-int i;
-for(i = 0; i < 2; i++){
-pinMode(motor_left[i], OUTPUT);
-pinMode(motor_right[i], OUTPUT);
-pinMode(ledPin, OUTPUT);
-}
-    pinMode(enablePin, OUTPUT);
-
-// set enablePin high so that motor can turn on:
-    digitalWrite(enablePin, HIGH);
-    
+  Serial.begin(9600);
+  pinMode(motor_left, OUTPUT);
+  Serial.begin(9600);
+  pinMode(enablePin, OUTPUT);
+  pinMode(motor_left[0], OUTPUT);
+  pinMode(motor_left[1], OUTPUT);
+  pinMode(motor_right[0], OUTPUT);
+  pinMode(motor_right[1], OUTPUT);
 }
 
 // ————————————————————————— Loop
 void loop() {
 
-// establish variables for duration of the ping, 
+  // establish variables for duration of the ping, 
   // and the distance result in inches and centimeters:
   long duration, inches, cm;
+  analogWrite(E1, 153); // Run in half speed
 
-
-   // The sensor is triggered by a HIGH pulse for 10 or more microseconds.
+  // The sensor is triggered by a HIGH pulse for 10 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
   pinMode(trigPin, OUTPUT);
   digitalWrite(trigPin, LOW);
@@ -48,93 +51,31 @@ void loop() {
   pinMode(echoPin, INPUT);
   duration = pulseIn(echoPin, HIGH);
 
-  // convert the time into a distance
+  //convert the time into a distance
   inches = microsecondsToInches(duration);
   cm = microsecondsToCentimeters(duration);
 
-// if the switch is high, motor will turn on one direction:
-    // Read sensor
-
-    if (cm < 500)
-    {
-    if (cm < 500 && cm > 300) 
-    {
-     digitalWrite(motor_left[0], HIGH); 
-     digitalWrite(motor_right[0], HIGH);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(100);
-     digitalWrite(motor_left[0], LOW);  
-     digitalWrite(motor_right[0], LOW);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(100);
-    }
-
-     if (cm <= 300 && cm > 100) 
-     {
-     digitalWrite(motor_left[0], HIGH); 
-     digitalWrite(motor_right[0], HIGH);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(200);
-     digitalWrite(motor_left[0], LOW);  
-     digitalWrite(motor_right[0], LOW);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(200);
-     }
-
-     if (cm <= 100 && cm > 40) 
-     {
-     digitalWrite(motor_left[0], HIGH); 
-     digitalWrite(motor_right[0], HIGH);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(300);
-     digitalWrite(motor_left[0], LOW);  
-     digitalWrite(motor_right[0], LOW);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(200);
-     }
-
-     if (cm <=40  && cm >= 5) 
-     {
-     digitalWrite(motor_left[0], HIGH); 
-     digitalWrite(motor_right[0], HIGH);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(500);
-     digitalWrite(motor_left[0], LOW);  
-     digitalWrite(motor_right[0], LOW);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     delayMicroseconds(300);
-     }
-
-     if (cm < 5) 
-     {
-     digitalWrite(motor_left[0], LOW); 
-     digitalWrite(motor_right[0], LOW);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     digitalWrite(motor_left[0], LOW);  
-     digitalWrite(motor_right[0], LOW);
-     digitalWrite(motor_left[1], LOW);
-     digitalWrite(motor_right[1], LOW);
-     }
-     
-    }
-
-      else 
-      {
-      digitalWrite(motor_left[0], HIGH); 
-      digitalWrite(motor_right[0], HIGH);
-      digitalWrite(motor_left[1], LOW);
-      digitalWrite(motor_right[1], LOW);
-      }    
-
+  if (cm < 25){
+    Serial.println ("Close Obstacle detected!" );
+    Serial.println ("Obstacle Details:");
+    Serial.print ("Distance From Robot is " );
+    Serial.print ( distance);
+    Serial.print ( " CM!");// print out the distance in centimeters.
+    Serial.println (" The obstacle is declared a threat due to close distance. ");
+    Serial.println (" Turning !");
+    digitalWrite(motor_left[0], HIGH); 
+    digitalWrite(motor_left[1], LOW);
+    digitalWrite(motor_right[0], LOW);
+    digitalWrite(motor_right[1], HIGH);
+  }
+  else{
+    //Set the motors on
+    digitalWrite(motor_left[0], HIGH); 
+    digitalWrite(motor_left[1], LOW);
+    digitalWrite(motor_right[0], HIGH);
+    digitalWrite(motor_right[1], LOW);
+  }
+  
 }
 
   long microsecondsToInches(long microseconds)
@@ -154,7 +95,7 @@ long microsecondsToCentimeters(long microseconds)
   // object we take half of the distance travelled.
   return microseconds / 29 / 2;
 
-  }
+}
 
 
 
