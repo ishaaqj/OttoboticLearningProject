@@ -36,7 +36,7 @@ void objectSense();
 //Setup
 void setup() {
   Serial.begin(9600);
-  pinMode(trigPin, OUTPUT);
+ pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(enablePin, OUTPUT);
   pinMode(motor_left[0], OUTPUT);
@@ -44,12 +44,16 @@ void setup() {
   pinMode(motor_right[0], OUTPUT);
   pinMode(motor_right[1], OUTPUT);
   
+  
 }
 
 //Loop
 void loop() {
+// establish variables for duration of the ping, 
+  // and the distance result in inches and centimeters:
+  analogWrite(enablePin, 255); // Run in half speed
   objectSense();
-  edgeSense();   
+  edgeSense();    
 }
 
 void edgeSense(){
@@ -58,13 +62,22 @@ void edgeSense(){
   }
   val2 = val2/10;
   Serial.println(val2);
+  if (val2 < 100) {
+    //reverse motors
+    digitalWrite(motor_left[0], LOW); 
+    digitalWrite(motor_left[1], HIGH);
+    digitalWrite(motor_right[0], HIGH);
+    digitalWrite(motor_right[1], LOW);
+  }
+  delay(100);
 }
 
 void objectSense(){
-   // establish variables for duration of the ping, and the distance result in inches and centimeters:
-  long duration, inches, cm;
+   long duration, inches, cm;
+   
   // The sensor is triggered by a HIGH pulse for 10 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
+  
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
@@ -82,23 +95,24 @@ void objectSense(){
 
   //If the distance the infared sensor detects is less than 25 cm, we will make the robot turn right to avoid the obstacle
   if (cm < 25){
-    Serial.println ("Close Obstacle detected!" );
     Serial.print ("Distance From Robot is " );
     Serial.print (cm);
     Serial.print ("CM!");// print out the distance in centimeters.
     Serial.println (" Turning !");
+    delay(100);
     digitalWrite(motor_left[0], HIGH); 
     digitalWrite(motor_left[1], LOW);
     digitalWrite(motor_right[0], LOW);
     digitalWrite(motor_right[1], HIGH);
+    delay(100);
   }
   //If the object is out of range of 25 cm, then the robot will continue to move at normal speeds
   else{
     //Set the motors on
     digitalWrite(motor_left[0], HIGH); 
     digitalWrite(motor_left[1], LOW);
-    digitalWrite(motor_right[0], HIGH);
-    digitalWrite(motor_right[1], LOW);
+    digitalWrite(motor_right[0], LOW);
+    digitalWrite(motor_right[1], HIGH);
   }
 }
 
