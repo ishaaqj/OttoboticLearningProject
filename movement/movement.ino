@@ -1,7 +1,7 @@
-#include <SharpIR.h>
 
-int distance = 0;
-
+#define irSensor A0
+long val2 = 0;
+int val = 0;                 // variable to store the values from sensor(initially zero)
 // Motors for tires, Connected on the H-bridge
 
 // Left Motor
@@ -20,7 +20,6 @@ const int echoPin = 5; //For infared sensor
 const int trigPin = 4; //For infared sensor
 const int ledPin =  13;    // LED connected to digital pin 13
 
-
 /**********************************************************
 //Example: SharpIR sharp(ir, 25, 93, model);
 //ir: the pin where your sensor is attached.
@@ -28,7 +27,6 @@ const int ledPin =  13;    // LED connected to digital pin 13
 //93: the difference between two consecutive measurements to be taken as valid (in %)
 //model: is an int that determines your sensor:  1080 for GP2Y0A21Y, 20150 for GP2Y0A02Y
 **********************************************************/
-SharpIR sharp(0, 25, 93, 1080); //To give values for the SHARPIR sensor for edge detection
 
 //prototype method for edgeSense()
 void edgeSense();
@@ -45,20 +43,28 @@ void setup() {
   pinMode(motor_left[1], OUTPUT);
   pinMode(motor_right[0], OUTPUT);
   pinMode(motor_right[1], OUTPUT);
-  analogWrite(enablePin, 153); // Run in half speed
+  
 }
 
 //Loop
 void loop() {
+  objectSense();
+  edgeSense();   
+}
 
-  // establish variables for duration of the ping, 
-  // and the distance result in inches and centimeters:
+void edgeSense(){
+  for (int i=0; i<10; i++){
+    val2 = analogRead(irSensor) + val2;
+  }
+  val2 = val2/10;
+  Serial.println(val2);
+}
+
+void objectSense(){
+   // establish variables for duration of the ping, and the distance result in inches and centimeters:
   long duration, inches, cm;
-  
-
   // The sensor is triggered by a HIGH pulse for 10 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
@@ -77,11 +83,9 @@ void loop() {
   //If the distance the infared sensor detects is less than 25 cm, we will make the robot turn right to avoid the obstacle
   if (cm < 25){
     Serial.println ("Close Obstacle detected!" );
-    Serial.println ("Obstacle Details:");
     Serial.print ("Distance From Robot is " );
     Serial.print (cm);
     Serial.print ("CM!");// print out the distance in centimeters.
-    Serial.println (" The obstacle is declared a threat due to close distance. ");
     Serial.println (" Turning !");
     digitalWrite(motor_left[0], HIGH); 
     digitalWrite(motor_left[1], LOW);
@@ -96,33 +100,6 @@ void loop() {
     digitalWrite(motor_right[0], HIGH);
     digitalWrite(motor_right[1], LOW);
   }
-  
-  edgeSense();   
-  
-}
-
-void edgeSense(){
-//  SensorValue = analogRead(sensorpin);       // reads the value of the sharp sensor
-//  delay(100);                    // wait for this much time before printing next value
-  distance = 4800/sharp.distance();
-  delay(10); //wait for the string to be sent
-  Serial.println(distance);            // prints the value of the sensor to the serial monitor
-  if (distance > 2){
-    digitalWrite(motor_left[0], LOW); 
-    digitalWrite(motor_left[1], HIGH);
-    digitalWrite(motor_right[0], LOW);
-    digitalWrite(motor_right[1], HIGH);
-    delay (1000);
-    digitalWrite(motor_left[0], LOW); 
-    digitalWrite(motor_left[1], HIGH);
-    digitalWrite(motor_right[0], LOW);
-    digitalWrite(motor_right[1], LOW);
-    delay(1000);
-  }
-}
-
-void objectSense(){
-  
 }
 
 long microsecondsToInches(long microseconds)
@@ -144,5 +121,6 @@ long microsecondsToCentimeters(long microseconds)
 
 }
 
+  
 
 
